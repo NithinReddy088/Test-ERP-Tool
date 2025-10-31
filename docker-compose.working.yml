@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: postgres:13
+    container_name: healthcare_erp_postgres
+    environment:
+      - POSTGRES_DB=healthcare_erp
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - healthcare_network
+
+  redis:
+    image: redis:6-alpine
+    container_name: healthcare_erp_redis
+    networks:
+      - healthcare_network
+
+  web:
+    image: frappe/erpnext:v14
+    container_name: healthcare_erp_web
+    ports:
+      - "8000:8000"
+    environment:
+      - FRAPPE_SITE_NAME=healthcare-erp.local
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_NAME=healthcare_erp
+      - DB_USER=postgres
+      - DB_PASSWORD=admin
+      - REDIS_CACHE_URL=redis://redis:6379/0
+      - REDIS_QUEUE_URL=redis://redis:6379/1
+      - REDIS_SOCKETIO_URL=redis://redis:6379/2
+    volumes:
+      - ./healthcare_manufacturing:/home/frappe/frappe-bench/apps/healthcare_manufacturing
+      - frappe_data:/home/frappe/frappe-bench/sites
+      - frappe_logs:/home/frappe/frappe-bench/logs
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - healthcare_network
+    user: "1000:1000"
+    working_dir: /home/frappe/frappe-bench
+    command: >
+      bash -c "
+        mkdir -p logs &&
+        chmod 755 logs &&
+        bench start
+      "
+
+volumes:
+  frappe_data:
+  frappe_logs:
+  postgres_data:
+
+networks:
+  healthcare_network:
+    driver: bridge
