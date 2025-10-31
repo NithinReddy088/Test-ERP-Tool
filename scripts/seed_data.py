@@ -19,6 +19,12 @@ def create_seed_data():
     create_suppliers()
     create_customers()
     
+    # Create Employees
+    create_employees()
+    
+    # Create Accounts
+    create_accounts()
+    
     # Create BOMs
     create_boms()
     
@@ -30,6 +36,9 @@ def create_seed_data():
     
     # Create Sample Quality Inspections
     create_quality_inspections()
+    
+    # Create KPIs
+    create_kpis()
     
     print("Seed data creation completed!")
 
@@ -147,6 +156,17 @@ def create_customers():
             })
             customer.insert()
             print(f"Created customer: {customer_data['customer_name']}")
+    
+    # Update customers with additional fields
+    for customer_data in customers:
+        customer_name = customer_data["customer_name"]
+        if frappe.db.exists("Customer", customer_name):
+            customer = frappe.get_doc("Customer", customer_name)
+            customer.territory = "North America"
+            customer.credit_limit = 100000
+            customer.payment_terms = "Net 30"
+            customer.save()
+            print(f"Updated customer: {customer_name}")
 
 def create_boms():
     """Create sample BOMs for medical devices"""
@@ -249,6 +269,159 @@ def create_quality_inspection_plans():
     for template in templates:
         # Create quality inspection template (this would be a custom DocType)
         print(f"Quality inspection template for {template['item_code']} would be created here")
+
+def create_employees():
+    """Create sample employees"""
+    employees = [
+        {
+            "employee_name": "John Smith",
+            "department": "Manufacturing",
+            "designation": "Production Manager",
+            "date_of_joining": "2020-01-15",
+            "company_email": "john.smith@healthcare-erp.com",
+            "ctc": 75000
+        },
+        {
+            "employee_name": "Sarah Johnson",
+            "department": "Quality Control",
+            "designation": "QC Manager", 
+            "date_of_joining": "2019-03-10",
+            "company_email": "sarah.johnson@healthcare-erp.com",
+            "ctc": 70000
+        },
+        {
+            "employee_name": "Mike Wilson",
+            "department": "Finance",
+            "designation": "Finance Manager",
+            "date_of_joining": "2018-06-20",
+            "company_email": "mike.wilson@healthcare-erp.com",
+            "ctc": 80000
+        },
+        {
+            "employee_name": "Lisa Chen",
+            "department": "Sales",
+            "designation": "Sales Manager",
+            "date_of_joining": "2021-02-01",
+            "company_email": "lisa.chen@healthcare-erp.com",
+            "ctc": 65000
+        }
+    ]
+    
+    for emp_data in employees:
+        if not frappe.db.exists("Employee", {"employee_name": emp_data["employee_name"]}):
+            emp = frappe.get_doc({
+                "doctype": "Employee",
+                **emp_data
+            })
+            emp.insert()
+            print(f"Created employee: {emp_data['employee_name']}")
+
+def create_accounts():
+    """Create sample chart of accounts"""
+    accounts = [
+        {
+            "account_name": "Assets",
+            "account_type": "Asset",
+            "is_group": 1,
+            "company": "Healthcare Manufacturing Corp"
+        },
+        {
+            "account_name": "Cash",
+            "account_type": "Asset",
+            "parent_account": "Assets",
+            "opening_balance": 250000,
+            "company": "Healthcare Manufacturing Corp"
+        },
+        {
+            "account_name": "Accounts Receivable",
+            "account_type": "Asset",
+            "parent_account": "Assets",
+            "opening_balance": 180000,
+            "company": "Healthcare Manufacturing Corp"
+        },
+        {
+            "account_name": "Inventory",
+            "account_type": "Asset",
+            "parent_account": "Assets",
+            "opening_balance": 320000,
+            "company": "Healthcare Manufacturing Corp"
+        },
+        {
+            "account_name": "Income",
+            "account_type": "Income",
+            "is_group": 1,
+            "company": "Healthcare Manufacturing Corp"
+        },
+        {
+            "account_name": "Sales Revenue",
+            "account_type": "Income",
+            "parent_account": "Income",
+            "company": "Healthcare Manufacturing Corp"
+        }
+    ]
+    
+    for acc_data in accounts:
+        if not frappe.db.exists("Account", {"account_name": acc_data["account_name"]}):
+            acc = frappe.get_doc({
+                "doctype": "Account",
+                **acc_data
+            })
+            acc.insert()
+            print(f"Created account: {acc_data['account_name']}")
+
+def create_kpis():
+    """Create sample KPIs"""
+    kpis = [
+        {
+            "kpi_name": "Production Efficiency",
+            "kpi_type": "Production",
+            "module": "Manufacturing",
+            "frequency": "Daily",
+            "target_value": 85,
+            "calculation_method": "Percentage",
+            "chart_type": "Gauge",
+            "color": "#2196F3"
+        },
+        {
+            "kpi_name": "Quality Pass Rate",
+            "kpi_type": "Quality",
+            "module": "Quality Control",
+            "frequency": "Daily",
+            "target_value": 98,
+            "calculation_method": "Percentage",
+            "chart_type": "Line",
+            "color": "#4CAF50"
+        },
+        {
+            "kpi_name": "On-Time Delivery",
+            "kpi_type": "Sales",
+            "module": "Sales",
+            "frequency": "Weekly",
+            "target_value": 95,
+            "calculation_method": "Percentage",
+            "chart_type": "Bar",
+            "color": "#FF9800"
+        },
+        {
+            "kpi_name": "Inventory Turnover",
+            "kpi_type": "Inventory",
+            "module": "Inventory",
+            "frequency": "Monthly",
+            "target_value": 12,
+            "calculation_method": "Count",
+            "chart_type": "Number",
+            "color": "#9C27B0"
+        }
+    ]
+    
+    for kpi_data in kpis:
+        if not frappe.db.exists("KPI", kpi_data["kpi_name"]):
+            kpi = frappe.get_doc({
+                "doctype": "KPI",
+                **kpi_data
+            })
+            kpi.insert()
+            print(f"Created KPI: {kpi_data['kpi_name']}")
 
 def create_quality_inspections():
     """Create sample quality inspection records"""

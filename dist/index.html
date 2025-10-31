@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare Manufacturing ERP</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; }
+        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; text-align: center; }
+        .nav { background: white; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .nav-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+        .nav-link { background: #4CAF50; color: white; padding: 0.5rem 1rem; text-decoration: none; border-radius: 5px; transition: all 0.3s; }
+        .nav-link:hover { background: #45a049; transform: translateY(-2px); }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin: 2rem 0; }
+        .card { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .metric { text-align: center; }
+        .metric h3 { font-size: 2.5rem; color: #667eea; margin-bottom: 0.5rem; }
+        .metric p { color: #666; font-size: 1.1rem; }
+        .api-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .api-card { background: #f8f9fa; padding: 1rem; border-radius: 8px; border-left: 4px solid #4CAF50; }
+        .api-method { background: #4CAF50; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; }
+        .loading { text-align: center; padding: 2rem; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table th, .table td { padding: 0.75rem; text-align: left; border-bottom: 1px solid #ddd; }
+        .table th { background: #f8f9fa; font-weight: 600; }
+        .status-in-process { color: #ff9800; font-weight: bold; }
+        .status-not-started { color: #f44336; font-weight: bold; }
+        .status-completed { color: #4caf50; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏥 Healthcare Manufacturing ERP</h1>
+        <p>Production-ready ERP for Healthcare Equipment Manufacturing & Distribution</p>
+    </div>
+
+    <div class="nav">
+        <div class="nav-links">
+            <a href="#" class="nav-link" onclick="showDashboard()">Dashboard</a>
+            <a href="#" class="nav-link" onclick="showProduction()">Production</a>
+            <a href="#" class="nav-link" onclick="showQuality()">Quality</a>
+            <a href="#" class="nav-link" onclick="showFinance()">Finance</a>
+            <a href="#" class="nav-link" onclick="showAPI()">API Docs</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading Healthcare ERP System...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/.netlify/functions';
+        
+        // Sample data
+        const sampleData = {
+            workOrders: [
+                {name: "WO-2024-001", production_item: "MED-DEV-001", qty: 10, status: "In Process", planned_start_date: "2024-11-01"},
+                {name: "WO-2024-002", production_item: "MED-DEV-002", qty: 25, status: "Not Started", planned_start_date: "2024-11-05"},
+                {name: "WO-2024-003", production_item: "MED-DEV-003", qty: 15, status: "Completed", planned_start_date: "2024-10-25"}
+            ],
+            items: [
+                {item_code: "MED-DEV-001", item_name: "Digital Blood Pressure Monitor", stock_qty: 50},
+                {item_code: "MED-DEV-002", item_name: "Pulse Oximeter", stock_qty: 75},
+                {item_code: "MED-DEV-003", item_name: "Digital Thermometer", stock_qty: 30}
+            ],
+            kpis: [
+                {kpi_name: "Production Efficiency", current_value: 85, target_value: 90},
+                {kpi_name: "Quality Pass Rate", current_value: 96, target_value: 98},
+                {kpi_name: "On-Time Delivery", current_value: 93, target_value: 95}
+            ]
+        };
+
+        function showDashboard() {
+            const content = `
+                <div class="dashboard-grid">
+                    <div class="card metric">
+                        <h3>${sampleData.workOrders.length}</h3>
+                        <p>Active Work Orders</p>
+                    </div>
+                    <div class="card metric">
+                        <h3>${sampleData.items.length}</h3>
+                        <p>Items in Catalog</p>
+                    </div>
+                    <div class="card metric">
+                        <h3>${sampleData.kpis.length}</h3>
+                        <p>KPI Metrics</p>
+                    </div>
+                    <div class="card metric">
+                        <h3>96%</h3>
+                        <p>Quality Pass Rate</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2>Recent Work Orders</h2>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Work Order</th><th>Item</th><th>Qty</th><th>Status</th><th>Start Date</th></tr>
+                        </thead>
+                        <tbody>
+                            ${sampleData.workOrders.map(wo => `
+                                <tr>
+                                    <td>${wo.name}</td>
+                                    <td>${wo.production_item}</td>
+                                    <td>${wo.qty}</td>
+                                    <td class="status-${wo.status.toLowerCase().replace(' ', '-')}">${wo.status}</td>
+                                    <td>${wo.planned_start_date}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card">
+                    <h2>Inventory Status</h2>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Item Code</th><th>Item Name</th><th>Stock Qty</th></tr>
+                        </thead>
+                        <tbody>
+                            ${sampleData.items.map(item => `
+                                <tr>
+                                    <td>${item.item_code}</td>
+                                    <td>${item.item_name}</td>
+                                    <td>${item.stock_qty}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }
+
+        function showProduction() {
+            const content = `
+                <div class="card">
+                    <h2>🏭 Production Manager Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card metric">
+                            <h3>2</h3>
+                            <p>Open Work Orders</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>1</h3>
+                            <p>Completed Orders</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>85%</h3>
+                            <p>OEE This Month</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>0</h3>
+                            <p>Overdue Orders</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Production Schedule (Gantt View)</h3>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Work Order</th><th>Item</th><th>Status</th><th>Timeline</th></tr>
+                        </thead>
+                        <tbody>
+                            ${sampleData.workOrders.map(wo => `
+                                <tr>
+                                    <td>${wo.name}</td>
+                                    <td>${wo.production_item}</td>
+                                    <td class="status-${wo.status.toLowerCase().replace(' ', '-')}">${wo.status}</td>
+                                    <td>${wo.planned_start_date}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }
+
+        function showQuality() {
+            const content = `
+                <div class="card">
+                    <h2>🔍 Quality Control Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card metric">
+                            <h3>5</h3>
+                            <p>Pending Inspections</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>2</h3>
+                            <p>Open NCRs</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>96%</h3>
+                            <p>Pass Rate (This Month)</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>3</h3>
+                            <p>CAPA Actions</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Quality Inspection Results</h3>
+                    <p>✅ Passed: 48 inspections</p>
+                    <p>❌ Failed: 2 inspections</p>
+                    <p>⏳ Pending: 5 inspections</p>
+                </div>
+
+                <div class="card">
+                    <h3>Traceability Features</h3>
+                    <p>🔗 Complete serial/batch tracking</p>
+                    <p>📋 Quality inspection linkage</p>
+                    <p>🏭 Supplier to customer traceability</p>
+                    <p>📊 Audit trail compliance</p>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }
+
+        function showFinance() {
+            const content = `
+                <div class="card">
+                    <h2>💰 Finance Dashboard</h2>
+                    <div class="dashboard-grid">
+                        <div class="card metric">
+                            <h3>$850K</h3>
+                            <p>Monthly Revenue</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>$180K</h3>
+                            <p>Accounts Receivable</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>$120K</h3>
+                            <p>Accounts Payable</p>
+                        </div>
+                        <div class="card metric">
+                            <h3>18%</h3>
+                            <p>Profit Margin</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Account Balances</h3>
+                    <table class="table">
+                        <thead>
+                            <tr><th>Account</th><th>Type</th><th>Balance</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Cash</td><td>Asset</td><td>$250,000</td></tr>
+                            <tr><td>Accounts Receivable</td><td>Asset</td><td>$180,000</td></tr>
+                            <tr><td>Inventory</td><td>Asset</td><td>$320,000</td></tr>
+                            <tr><td>Sales Revenue</td><td>Income</td><td>$850,000</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }
+
+        function showAPI() {
+            const content = `
+                <div class="card">
+                    <h2>🔌 API Documentation</h2>
+                    <p>RESTful APIs for Healthcare Manufacturing ERP integration</p>
+                </div>
+
+                <div class="api-grid">
+                    <div class="api-card">
+                        <h4><span class="api-method">GET</span> /api/work-orders</h4>
+                        <p>Get all work orders with optional status filter</p>
+                    </div>
+                    <div class="api-card">
+                        <h4><span class="api-method">POST</span> /api/work-orders</h4>
+                        <p>Create a new work order</p>
+                    </div>
+                    <div class="api-card">
+                        <h4><span class="api-method">GET</span> /api/trace/serial/{id}</h4>
+                        <p>Trace serial number through production</p>
+                    </div>
+                    <div class="api-card">
+                        <h4><span class="api-method">GET</span> /api/trace/batch/{id}</h4>
+                        <p>Trace batch number through quality records</p>
+                    </div>
+                    <div class="api-card">
+                        <h4><span class="api-method">GET</span> /api/quality-inspections</h4>
+                        <p>Get quality inspection records</p>
+                    </div>
+                    <div class="api-card">
+                        <h4><span class="api-method">GET</span> /api/kpis</h4>
+                        <p>Get KPI metrics and analytics</p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Authentication</h3>
+                    <p>All API endpoints support token-based authentication</p>
+                    <pre>Authorization: Bearer YOUR_API_TOKEN</pre>
+                </div>
+            `;
+            document.getElementById('content').innerHTML = content;
+        }
+
+        // Initialize dashboard on load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(showDashboard, 1000);
+        });
+    </script>
+</body>
+</html>

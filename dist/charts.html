@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ERP Analytics Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f7fa; }
+        .chart-container { background: white; padding: 20px; margin: 20px 0; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; }
+    </style>
+</head>
+<body>
+    <h1>📊 Real-time Analytics Dashboard</h1>
+    
+    <div class="chart-grid">
+        <div class="chart-container">
+            <canvas id="productionChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="qualityChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="inventoryChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Production Efficiency Chart
+        new Chart(document.getElementById('productionChart'), {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Production Efficiency %',
+                    data: [78, 82, 85, 88, 85, 90],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Production Efficiency Trend' } } }
+        });
+
+        // Quality Pass Rate Chart
+        new Chart(document.getElementById('qualityChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Passed', 'Failed', 'Pending'],
+                datasets: [{
+                    data: [96, 2, 2],
+                    backgroundColor: ['#4CAF50', '#f44336', '#ff9800']
+                }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Quality Inspection Results' } } }
+        });
+
+        // Revenue Chart
+        new Chart(document.getElementById('revenueChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [{
+                    label: 'Revenue ($K)',
+                    data: [450, 520, 480, 650],
+                    backgroundColor: '#2196F3'
+                }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Quarterly Revenue' } } }
+        });
+
+        // Inventory Levels
+        new Chart(document.getElementById('inventoryChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Raw Materials', 'WIP', 'Finished Goods', 'Spare Parts', 'Consumables'],
+                datasets: [{
+                    label: 'Stock Levels',
+                    data: [85, 65, 90, 70, 80],
+                    borderColor: '#9C27B0',
+                    backgroundColor: 'rgba(156, 39, 176, 0.2)'
+                }]
+            },
+            options: { responsive: true, plugins: { title: { display: true, text: 'Inventory Distribution' } } }
+        });
+    </script>
+</body>
+</html>

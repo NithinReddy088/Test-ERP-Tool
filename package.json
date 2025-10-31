@@ -1,0 +1,17 @@
+{
+  "name": "healthcare-manufacturing-erp",
+  "version": "1.0.0",
+  "description": "Healthcare Manufacturing ERP System",
+  "main": "index.js",
+  "scripts": {
+    "build": "echo 'Build complete'",
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": ["erp", "healthcare", "manufacturing", "quality-control"],
+  "author": "Healthcare ERP Team",
+  "license": "MIT",
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+}
