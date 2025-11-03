@@ -1,38 +1,57 @@
 #!/bin/bash
 
-echo "Setting up Healthcare Manufacturing ERP..."
+set -e
 
-# Stop any existing containers
-docker-compose down 2>/dev/null || true
+echo "Healthcare Manufacturing ERP - Native Setup"
+echo "==========================================="
 
-# Start with simple configuration
-docker-compose -f docker-compose.simple.yml up -d postgres redis
+# Check prerequisites
+command -v python3 >/dev/null 2>&1 || { echo "Python 3 is required but not installed."; exit 1; }
+command -v node >/dev/null 2>&1 || { echo "Node.js is required but not installed."; exit 1; }
+command -v redis-cli >/dev/null 2>&1 || { echo "Redis is required but not installed."; exit 1; }
 
-# Wait for database to be ready
-echo "Waiting for database to be ready..."
-sleep 10
+# Install frappe-bench if not already installed
+if ! command -v bench >/dev/null 2>&1; then
+    echo "Installing frappe-bench..."
+    pip3 install frappe-bench
+fi
 
-# Start web container
-docker-compose -f docker-compose.simple.yml up -d web
+# Initialize bench if not exists
+if [ ! -d "frappe-bench" ]; then
+    echo "Initializing Frappe bench..."
+    bench init frappe-bench --frappe-branch version-15
+fi
 
-# Wait for web container to be ready
-echo "Waiting for web container to be ready..."
-sleep 20
+cd frappe-bench
 
-# Create new site
-echo "Creating new site..."
-docker-compose -f docker-compose.simple.yml exec web bench new-site healthcare-erp.local --admin-password admin --mariadb-root-password admin --install-app erpnext
+# Create site
+SITE_NAME="healthcare-erp.local"
+if [ ! -d "sites/$SITE_NAME" ]; then
+    echo "Creating site: $SITE_NAME"
+    bench new-site $SITE_NAME --admin-password admin
+else
+    echo "Site $SITE_NAME already exists"
+fi
 
-# Install healthcare manufacturing app
-echo "Installing healthcare manufacturing app..."
-docker-compose -f docker-compose.simple.yml exec web bench get-app healthcare_manufacturing /home/frappe/frappe-bench/apps/healthcare_manufacturing
-docker-compose -f docker-compose.simple.yml exec web bench --site healthcare-erp.local install-app healthcare_manufacturing
+# Get app
+APP_PATH="$(dirname $(pwd))/healthcare_manufacturing"
+if [ ! -d "apps/healthcare_manufacturing" ]; then
+    echo "Getting healthcare_manufacturing app..."
+    bench get-app $APP_PATH
+else
+    echo "App already exists"
+fi
+
+# Install app
+echo "Installing healthcare_manufacturing app..."
+bench --site $SITE_NAME install-app healthcare_manufacturing
 
 # Load seed data
 echo "Loading seed data..."
-docker-compose -f docker-compose.simple.yml exec web python /home/frappe/frappe-bench/apps/healthcare_manufacturing/scripts/seed_data.py
+bench --site $SITE_NAME execute healthcare_manufacturing.setup.seed_data.load_seed_data || echo "Seed data loading skipped"
 
+echo ""
 echo "Setup complete!"
-echo "Access the application at: http://localhost:8000"
-echo "Username: Administrator"
-echo "Password: admin"
+echo "Start the application with: cd frappe-bench && bench start"
+echo "Access at: http://localhost:8000"
+echo "Login: Administrator / admin"

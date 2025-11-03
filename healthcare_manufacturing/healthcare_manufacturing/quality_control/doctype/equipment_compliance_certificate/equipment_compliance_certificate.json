@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "creation": "2024-01-01 00:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "equipment_item",
+  "equipment_name",
+  "serial_no",
+  "batch_no",
+  "column_break_1",
+  "certificate_number",
+  "issue_date",
+  "expiry_date",
+  "status",
+  "section_break_2",
+  "compliance_standard",
+  "certification_body",
+  "certificate_type",
+  "section_break_3",
+  "test_results",
+  "section_break_4",
+  "certificate_file",
+  "remarks"
+ ],
+ "fields": [
+  {
+   "fieldname": "equipment_item",
+   "fieldtype": "Link",
+   "label": "Equipment Item",
+   "options": "Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "equipment_name",
+   "fieldtype": "Data",
+   "label": "Equipment Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "serial_no",
+   "fieldtype": "Link",
+   "label": "Serial No",
+   "options": "Serial No"
+  },
+  {
+   "fieldname": "batch_no",
+   "fieldtype": "Link",
+   "label": "Batch No",
+   "options": "Batch"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "certificate_number",
+   "fieldtype": "Data",
+   "label": "Certificate Number",
+   "unique": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "issue_date",
+   "fieldtype": "Date",
+   "label": "Issue Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Valid\nExpired\nRevoked\nPending Renewal",
+   "default": "Valid"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Compliance Details"
+  },
+  {
+   "fieldname": "compliance_standard",
+   "fieldtype": "Select",
+   "label": "Compliance Standard",
+   "options": "ISO 13485\nFDA 21 CFR Part 820\nCE Mark (MDR)\nISO 9001\nISO 14971\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "certification_body",
+   "fieldtype": "Data",
+   "label": "Certification Body",
+   "reqd": 1
+  },
+  {
+   "fieldname": "certificate_type",
+   "fieldtype": "Select",
+   "label": "Certificate Type",
+   "options": "Quality Management\nSafety\nPerformance\nBiocompatibility\nSterilization"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Test Results"
+  },
+  {
+   "fieldname": "test_results",
+   "fieldtype": "Table",
+   "label": "Test Results",
+   "options": "Compliance Test Result"
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "Attachments"
+  },
+  {
+   "fieldname": "certificate_file",
+   "fieldtype": "Attach",
+   "label": "Certificate File"
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Long Text",
+   "label": "Remarks"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Quality Control",
+ "name": "Equipment Compliance Certificate",
+ "naming_rule": "Expression",
+ "autoname": "format:CERT-{YYYY}-{#####}",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Quality Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "read": 1,
+   "role": "Manufacturing User"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

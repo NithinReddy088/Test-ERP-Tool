@@ -22,42 +22,67 @@ A production-ready ERP application built on ERPNext/Frappe for healthcare equipm
 
 ## Quick Start
 
-### Prerequisites
-- Docker and Docker Compose
+### Automated Installation (Recommended)
+
+Run the automated setup script:
+```bash
+./quick-start.sh
+```
+
+This script will:
+- Check prerequisites
+- Install Frappe Bench
+- Initialize bench environment
+- Create site and install ERPNext
+- Install Healthcare Manufacturing app
+- Configure the system
+
+### Manual Installation
+
+#### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- MariaDB 10.6+ or PostgreSQL 13+
+- Redis 6+
+- wkhtmltopdf (for PDF generation)
 - 4GB+ RAM
 - 20GB+ disk space
 
-### Installation
+#### Installation Steps
 
-1. Clone the repository:
+1. Install Frappe Bench:
 ```bash
-git clone <repository-url>
-cd Test-ERP-Tool
+pip3 install frappe-bench
 ```
 
-2. Copy environment file:
+2. Initialize bench:
 ```bash
-cp .env.example .env
-# Edit .env with your configuration
+bench init frappe-bench --frappe-branch version-15
+cd frappe-bench
 ```
 
-3. Start the services:
+3. Create a new site:
 ```bash
-docker-compose up -d
+bench new-site healthcare-erp.local --admin-password admin
 ```
 
-4. Initialize the site:
+4. Clone and install the app:
 ```bash
-docker-compose exec web bench new-site healthcare-erp.local --admin-password admin
-docker-compose exec web bench --site healthcare-erp.local install-app healthcare_manufacturing
+bench get-app /path/to/Test-ERP-Tool/healthcare_manufacturing
+bench --site healthcare-erp.local install-app healthcare_manufacturing
 ```
 
 5. Load seed data:
 ```bash
-docker-compose exec web python scripts/seed_data.py
+bench --site healthcare-erp.local execute healthcare_manufacturing.setup.seed_data.load_seed_data
 ```
 
-6. Access the application:
+6. Start the application:
+```bash
+bench start
+```
+
+7. Access the application:
 - Web UI: http://localhost:8000
 - Admin credentials: Administrator / admin
 
@@ -94,27 +119,29 @@ GET /api/method/healthcare_manufacturing.api.traceability.trace_batch?batch_no=B
 
 Run unit tests:
 ```bash
-docker-compose exec web bench --site healthcare-erp.local run-tests --app healthcare_manufacturing
+bench --site healthcare-erp.local run-tests --app healthcare_manufacturing
 ```
 
 Run specific test:
 ```bash
-docker-compose exec web bench --site healthcare-erp.local run-tests healthcare_manufacturing.tests.test_work_order
+bench --site healthcare-erp.local run-tests healthcare_manufacturing.tests.test_work_order
 ```
 
 ## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Nginx         │    │   Frappe Web    │    │   Workers       │
-│   (Reverse      │────│   Application   │────│   (Background   │
-│   Proxy)        │    │                 │    │   Jobs)         │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                       ┌─────────────────┐    ┌─────────────────┐
-                       │   PostgreSQL    │    │   Redis         │
-                       │   (Database)    │    │   (Cache/Queue) │
-                       └─────────────────┘    └─────────────────┘
+┌─────────────────┐    ┌─────────────────┐
+│   Frappe Web    │    │   Workers       │
+│   Application   │────│   (Background   │
+│   (Gunicorn)    │    │   Jobs)         │
+└─────────────────┘    └─────────────────┘
+         │
+         ├─────────────────┬─────────────────┐
+         │                 │                 │
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   MariaDB/      │ │   Redis         │ │   SocketIO      │
+│   PostgreSQL    │ │   (Cache/Queue) │ │   (Realtime)    │
+└─────────────────┘ └─────────────────┘ └─────────────────┘
 ```
 
 ## Security & Compliance
@@ -153,20 +180,16 @@ Access Grafana: http://localhost:3000 (admin/admin)
 
 ### Automated Backups
 ```bash
-# Database backup
-docker-compose exec backup /backup.sh
+# Database and files backup
+bench --site healthcare-erp.local backup --with-files
 
-# File backup
-docker-compose exec web tar -czf /backups/files-$(date +%Y%m%d).tar.gz /home/frappe/frappe-bench/sites
+# Backups are stored in sites/healthcare-erp.local/private/backups/
 ```
 
 ### Restore Process
 ```bash
-# Restore database
-docker-compose exec postgres psql -U postgres -d healthcare_erp < /backups/backup.sql
-
-# Restore files
-docker-compose exec web tar -xzf /backups/files-20240101.tar.gz -C /
+# Restore database and files
+bench --site healthcare-erp.local restore /path/to/backup.sql.gz --with-private-files /path/to/files.tar --with-public-files /path/to/public-files.tar
 ```
 
 ## Development
@@ -189,41 +212,65 @@ def custom_endpoint():
 
 ### Running in Development Mode
 ```bash
-# Start in development mode
-docker-compose -f docker-compose.dev.yml up
-
 # Enable developer mode
-docker-compose exec web bench --site healthcare-erp.local set-config developer_mode 1
+bench --site healthcare-erp.local set-config developer_mode 1
+
+# Start in development mode
+bench start
 ```
 
 ## Production Deployment
 
-### Kubernetes Deployment
-See `k8s/` directory for Helm charts and deployment manifests.
+### Setup Production
+```bash
+# Setup production environment
+sudo bench setup production <username>
+
+# Enable SSL
+sudo bench setup lets-encrypt healthcare-erp.local
+```
 
 ### Performance Tuning
-- Configure PostgreSQL for production workloads
-- Set up Redis clustering for high availability
-- Enable Nginx caching and compression
-- Configure worker scaling based on load
+- Configure MariaDB/PostgreSQL for production workloads
+- Set up Redis persistence and memory limits
+- Configure Nginx caching and compression
+- Adjust Gunicorn workers: `bench set-config -g workers 4`
+- Enable background workers: `bench set-config -g background_workers 2`
 
 ### Monitoring Setup
-- Deploy Prometheus and Grafana
-- Configure alerting rules
-- Set up log aggregation
-- Monitor key business metrics
+- Monitor logs: `bench --site healthcare-erp.local logs`
+- Check processes: `bench doctor`
+- Monitor key business metrics via custom reports
 
-## Support
+## Documentation
 
-### Documentation
+### Comprehensive Guides
+- **[Deployment Guide](DEPLOYMENT_GUIDE.md)** - Complete setup and deployment instructions
+- **[Architecture Documentation](ARCHITECTURE.md)** - System architecture and design
+- **[Presentation](PRESENTATION.md)** - Project overview and implementation details
+
+### Additional Resources
 - API Documentation: `/api/method/frappe.desk.query_report.run`
 - User Manual: Available in the application help section
 - Developer Guide: See `docs/` directory
 
+## Custom DocTypes
+
+This ERP includes healthcare-specific custom DocTypes:
+
+1. **Quality Control Log** - Comprehensive quality inspection tracking
+2. **Equipment Compliance Certificate** - ISO 13485, FDA, CE Mark management
+3. **Maintenance Schedule** - Preventive and corrective maintenance planning
+4. **Production Batch Tracking** - Complete traceability from raw materials to finished products
+
+## Support
+
 ### Troubleshooting
-- Check application logs: `docker-compose logs web`
-- Database connectivity: `docker-compose exec postgres pg_isready`
-- Redis status: `docker-compose exec redis redis-cli ping`
+- Check application logs: `bench --site healthcare-erp.local logs`
+- Check bench status: `bench doctor`
+- Database connectivity: `bench mariadb` or `bench postgres`
+- Redis status: `redis-cli ping`
+- Clear cache: `bench --site healthcare-erp.local clear-cache`
 
 ## License
 
